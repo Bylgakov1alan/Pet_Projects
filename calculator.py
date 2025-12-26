@@ -2,7 +2,7 @@ import re
 
 
 
-theInputString = '++++----)(((////)-+++///2343-*sadfadfb r///fda(%+/++/%/%/%)_()+!!!***--)))7++++++----sdfsdf65' #input()
+theInputString = '++++----)(((////)-+++///2343-*sadfadfb r///fda(%+/++/%/%/%)_()+!!!***-(-)))7)++++++----sdfsdf65' #input()
 
 lenNewString = len(theInputString)
 
@@ -126,74 +126,108 @@ def ChetPervoyPary(NewString):
     IndexEndOneNumbers = PoiskOneNumber(NewString).end()
     IndexStartTwoNumbers = PoiskTwoNumber(NewString).start()
     print(IndexEndOneNumbers, IndexStartTwoNumbers)
+    operator=""
     
     for i in range(IndexEndOneNumbers,IndexStartTwoNumbers):
         if NewString[i] == "/":
             print(OneNumber,"/",TwoNumber,"=",int(OneNumber)/int(TwoNumber))
             OneOperatorCounted = f"{OneNumber}/{TwoNumber}"
+            operator="/"
             break
         elif NewString[i] == "%":
             print(OneNumber,"%",TwoNumber,"=",int(OneNumber)%int(TwoNumber))
             OneOperatorCounted = f"{OneNumber}%{TwoNumber}"
+            operator="%"
             break
         elif NewString[i] == "*":
             print(OneNumber,"*",TwoNumber,"=",int(OneNumber)*int(TwoNumber))
             OneOperatorCounted = f"{OneNumber}*{TwoNumber}"
+            operator="*"
             break
         elif NewString[i] == "-":
             print(OneNumber,"-",TwoNumber,"=",int(OneNumber)-int(TwoNumber))
             OneOperatorCounted = f"{OneNumber}-{TwoNumber}"
+            operator="-"
             break
         elif NewString[i] == "+":
             print(OneNumber,"+",TwoNumber,"=",int(OneNumber)+int(TwoNumber))
             OneOperatorCounted = f"{OneNumber}+{TwoNumber}"
+            operator="+"
             break
         # OneOperatorCounted = OneOperatorCounted + str(NewString[int(IndexStartTwoNumbers)+int(IndexEndOneNumbers)-1:len(NewString)])
-    return OneOperatorCounted
+    return OneOperatorCounted, operator
 
 NewStringPerIterachiya = ChetPervoyPary(NewString)
 
-def ProverkaSkobok(NewString, NewStringPerIterachiya):
-    OneNumber = PoiskOneNumber(NewString).group()
-    TwoNumber = PoiskTwoNumber(NewString).group()
+#осталось нужно оставлять скобки которые будут между двумя операторами, так как сейчас все удаляется 
+
+def DeleteUnnecessaryOperators(NewString):
+    PervayaPara=ChetPervoyPary(NewString)[0]
+    operator=ChetPervoyPary(NewString)[1]
+    print (f"первая пара",PervayaPara)
+    print (f"оператор",operator)
+    print(f"полная строка", NewString, "длина строки ",len(NewString), operator)
     
-    IndexEndOneNumbers = PoiskOneNumber(NewString).end()
-    IndexStartTwoNumbers = PoiskTwoNumber(NewString).start()
-    Skoboka_Otkr_Interval_Nach_PervChifra, Skoboka_Zakr_Interval_Nach_PervChifra = 0,0
-    flag_pered_pervoy_chifroy=0
-    Skoboka_Otkr_Interval_One_AND_Two, Skoboka_Otkr_Interval_Nach_PervChifra, flag_pered_pervoy_chifroy = 0,0,0
+    RegOneNumber=PoiskOneNumber(NewString)
+    RegTwoNumber=PoiskTwoNumber(NewString)
+    print (RegOneNumber.end(), RegOneNumber.start(), RegOneNumber.group())
+    print (RegTwoNumber.end(), RegTwoNumber.start(), RegTwoNumber.group())
     
-    for i in range(0,IndexEndOneNumbers):
-        if NewString[i]=="(":
-            Skoboka_Otkr_Interval_Nach_PervChifra=Skoboka_Otkr_Interval_Nach_PervChifra+1
-            print("есть скобочка (")
-        if NewString[i]==")":
-            Skoboka_Zakr_Interval_Nach_PervChifra=Skoboka_Zakr_Interval_Nach_PervChifra+1
-            print("есть скобочка (")
+    #осталось нужно оставлять скобки которые будут между двумя операторами, так как сейчас все удаляется 
+    NewNewString = NewString[0:RegOneNumber.end()]+operator+NewString[RegTwoNumber.end()+RegOneNumber.end():]
+    
+    print(NewNewString)
+    # PoiskOneNumber(NewString): PoiskTwoNumber(NewString):
+    
+ddd = DeleteUnnecessaryOperators(NewString)
+
+
+
+
+
+
+
+# def ProverkaSkobok(NewString, NewStringPerIterachiya):
+#     OneNumber = PoiskOneNumber(NewString).group()
+#     TwoNumber = PoiskTwoNumber(NewString).group()
+    
+#     IndexEndOneNumbers = PoiskOneNumber(NewString).end()
+#     IndexStartTwoNumbers = PoiskTwoNumber(NewString).start()
+#     Skoboka_Otkr_Interval_Nach_PervChifra, Skoboka_Zakr_Interval_Nach_PervChifra = 0,0
+#     flag_pered_pervoy_chifroy=0
+#     Skoboka_Otkr_Interval_One_AND_Two, Skoboka_Otkr_Interval_Nach_PervChifra, flag_pered_pervoy_chifroy = 0,0,0
+    
+#     for i in range(0,IndexEndOneNumbers):
+#         if NewString[i]=="(":
+#             Skoboka_Otkr_Interval_Nach_PervChifra=Skoboka_Otkr_Interval_Nach_PervChifra+1
+#             print("есть скобочка (")
+#         if NewString[i]==")":
+#             Skoboka_Zakr_Interval_Nach_PervChifra=Skoboka_Zakr_Interval_Nach_PervChifra+1
+#             print("есть скобочка (")
             
-    if Skoboka_Otkr_Interval_Nach_PervChifra == Skoboka_Zakr_Interval_Nach_PervChifra:
-        print("ничего не нужно")
-    elif Skoboka_Otkr_Interval_Nach_PervChifra < Skoboka_Zakr_Interval_Nach_PervChifra:
-        print("ничего не нужно")
-    elif Skoboka_Otkr_Interval_Nach_PervChifra > Skoboka_Zakr_Interval_Nach_PervChifra:
-        flag_pered_pervoy_chifroy=1
-        print("нужны скобки перед выражением")
+#     if Skoboka_Otkr_Interval_Nach_PervChifra == Skoboka_Zakr_Interval_Nach_PervChifra:
+#         print("ничего не нужно")
+#     elif Skoboka_Otkr_Interval_Nach_PervChifra < Skoboka_Zakr_Interval_Nach_PervChifra:
+#         print("ничего не нужно")
+#     elif Skoboka_Otkr_Interval_Nach_PervChifra > Skoboka_Zakr_Interval_Nach_PervChifra:
+#         flag_pered_pervoy_chifroy=1
+#         print("нужны скобки перед выражением")
         
-    for i in range(IndexEndOneNumbers,IndexStartTwoNumbers):
-        if NewString[i]=="(":
-            Skoboka_Otkr_Interval_One_AND_Two=Skoboka_Otkr_Interval_One_AND_Two+1
-            print("есть скобочка (")
-        if NewString[i]==")":
-            Skoboka_Zakr_Interval_One_AND_Two=Skoboka_Zakr_Interval_One_AND_Two+1
-            print("есть скобочка (")
+#     for i in range(IndexEndOneNumbers,IndexStartTwoNumbers):
+#         if NewString[i]=="(":
+#             Skoboka_Otkr_Interval_One_AND_Two=Skoboka_Otkr_Interval_One_AND_Two+1
+#             print("есть скобочка (")
+#         if NewString[i]==")":
+#             Skoboka_Zakr_Interval_One_AND_Two=Skoboka_Zakr_Interval_One_AND_Two+1
+#             print("есть скобочка (")
     
-    if Skoboka_Otkr_Interval_Nach_PervChifra == Skoboka_Zakr_Interval_Nach_PervChifra:
-        print("ничего не нужно")
-    elif Skoboka_Otkr_Interval_Nach_PervChifra < Skoboka_Zakr_Interval_Nach_PervChifra:
-        print("ничего не нужно")
-    elif Skoboka_Otkr_Interval_Nach_PervChifra > Skoboka_Zakr_Interval_Nach_PervChifra:
-        flag_pered_pervoy_chifroy=1
-        print("нужны скобки в середине выражения выражением")        
+#     if Skoboka_Otkr_Interval_Nach_PervChifra == Skoboka_Zakr_Interval_Nach_PervChifra:
+#         print("ничего не нужно")
+#     elif Skoboka_Otkr_Interval_Nach_PervChifra < Skoboka_Zakr_Interval_Nach_PervChifra:
+#         print("ничего не нужно")
+#     elif Skoboka_Otkr_Interval_Nach_PervChifra > Skoboka_Zakr_Interval_Nach_PervChifra:
+#         flag_pered_pervoy_chifroy=1
+#         print("нужны скобки в середине выражения выражением")        
     
             
     # for i in range(IndexEndOneNumbers, len(NewString)):
@@ -201,8 +235,6 @@ def ProverkaSkobok(NewString, NewStringPerIterachiya):
     #             Skobok_Interval_Nach_PervChifra+=1
     #             print("есть скобочка )")
 
-ProverkaSkobok(NewString, NewStringPerIterachiya)
-print(NewString)
-print(NewStringPerIterachiya)
+# ProverkaSkobok(NewString, NewStringPerIterachiya)
 
 
