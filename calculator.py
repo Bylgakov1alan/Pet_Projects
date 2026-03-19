@@ -173,7 +173,7 @@ def DeleteUnnecessaryOperators(NewString):
     print (RegOneNumber.end(), RegOneNumber.start(), RegOneNumber.group())
     print (RegTwoNumber.end(), RegTwoNumber.start(), RegTwoNumber.group())
     
-    #осталось нужно оставлять скобки которые будут между двумя операторами, так как сейчас все удаляется 
+    # нужно оставлять скобки которые будут между двумя операторами, так как сейчас все удаляется 
     NewNewString = NewString[0:RegOneNumber.end()]+operator+NewString[RegTwoNumber.end()+RegOneNumber.end():]
     
     print(NewNewString)
