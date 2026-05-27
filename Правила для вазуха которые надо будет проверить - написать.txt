@@ -1,0 +1,141 @@
+<!-- Группа правил аутентификации -->
+<group name="authentication,">
+
+  <!-- 1. Множественные неудачные попытки входа (SSH) - Брутфорс -->
+  <rule id="100100" level="5">
+    <if_sid>5716</if_sid>
+    <match>Failed password</match>
+    <description>SSH Failed password attempt.</description>
+    <group>authentication_failed,</group>
+  </rule>
+
+  <!-- 1.1. Эскалация: Более 5 попыток за 60 секунд -->
+  <rule id="100101" level="12">
+    <if_sid>100100</if_sid>
+    <frequency>5</frequency>
+    <timeframe>60</timeframe>
+    <description>Multiple SSH failed login attempts (Brute force detected).</description>
+    <group>authentication_failed,brute_force,</group>
+  </rule>
+
+  <!-- 2. Успешный вход после серии неудач (Возможный взлом) -->
+  <rule id="100102" level="15">
+    <if_sid>5715</if_sid>
+    <match>Accepted</match>
+    <same_source_ip />
+    <check_if_sid>100100</check_if_sid>
+    <description>Successful login after multiple failures.</description>
+    <group>authentication_success,suspicious_login,</group>
+  </rule>
+
+  <!-- 3. Вход root с удаленного хоста (Запрещено политикой) -->
+  <rule id="100103" level="10">
+    <if_sid>5715</if_sid>
+    <match>Accepted .* for root</match>
+    <description>Root user logged in remotely.</description>
+    <group>authentication_success,privilege_escalation,</group>
+  </rule>
+
+  <!-- 4. Неудачная попытка sudo (Попытка эскалации привилегий) -->
+  <rule id="100104" level="8">
+    <match>sudo:.*authentication failure</match>
+    <description>Sudo authentication failure.</description>
+    <group>privilege_escalation,</group>
+  </rule>
+  
+  <!-- 5. Добавление пользователя в группу sudo/wheel -->
+  <rule id="100105" level="10">
+    <match>usermod.*-G.*sudo|usermod.*-G.*wheel|adduser.*sudo</match>
+    <description>User added to privileged group (sudo/wheel).</description>
+    <group>account_change,privilege_escalation,</group>
+  </rule>
+
+</group>
+
+  <!-- 6. Изменение /etc/passwd или /etc/shadow -->
+  <rule id="100200" level="12">
+    <if_sid>550,551,552,553,554,555</if_sid>
+    <match>/etc/passwd|/etc/shadow</match>
+    <description>Critical system file modified (/etc/passwd or shadow).</description>
+    <group>file_integrity,critical_change,</group>
+  </rule>
+
+  <rule id="100202" level="11">
+    <if_sid>550</if_sid>
+    <match>/var/spool/cron|/etc/cron</match>
+    <description>Cron job modified or created.</description>
+    <group>file_integrity,persistence,</group>
+  </rule>
+
+  <rule id="100203" level="13">
+    <if_sid>550</if_sid>
+    <match>suid</match>
+    <description>New SUID bit set on file.</description>
+    <group>file_integrity,privilege_escalation,</group>
+  </rule>
+
+
+Модификация библиотек (/lib, /usr/lib)
+Внедрение кода в системные библиотеки (LD_PRELOAD атаки).
+15 (Critical)
+Требует точной настройки FIM.
+
+
+<rule id="100101" level="15">
+  <if_sid>5715</if_sid> <!-- Стандартное правило Wazuh: Successful SSH login -->
+  <match>Accepted</match>
+  <same_source_ip />
+  <!-- Проверка: было ли ранее событие неудачного входа с этого IP? -->
+  <check_if_sid>5716,100100</check_if_sid> 
+  <description>CRITICAL: Successful login detected after multiple failed attempts (Brute-force succeeded).</description>
+  <group>authentication_success,brute_force_success,critical,</group>
+  <mitre>
+    <id>T1110</id> <!-- Brute Force -->
+    <id>T1078</id> <!-- Valid Accounts -->
+  </mitre>
+</rule>
+
+<rule id="100102" level="15">
+  <if_sid>550,551,552,553,554,555</if_sid> <!-- Syscheck или Auditd события изменения файлов/команд -->
+  <!-- Регулярное выражение ищет команды модификации групп -->
+  <regex>usermod.*-G.*(sudo|wheel)|adduser.*sudo|gpasswd.*-a.*(sudo|wheel)</regex>
+  <description>CRITICAL: User added to privileged group (sudo/wheel). Potential privilege escalation.</description>
+  <group>privilege_escalation,account_modification,critical,</group>
+  <mitre>
+    <id>T1548</id> <!-- Abuse Elevation Control Mechanism -->
+  </mitre>
+</rule>
+
+<rule id="100201" level="15">
+  <if_sid>550</if_sid> <!-- FIM: File modified -->
+  <match>suid</match>
+  <description>CRITICAL: New SUID bit set on a file. Possible local privilege escalation backdoor.</description>
+  <group>file_integrity,suid_bit,critical,</group>
+  <mitre>
+    <id>T1548.001</id> <!-- Setuid and Setgid -->
+  </mitre>
+</rule>
+
+<rule id="100302" level="16">
+  <if_sid>500,501,502,503,504,505,506,507,508,509,510</if_sid> <!-- Широкая группа логов процессов/команд -->
+  <regex>bash\s+-i|nc\s+-e|/bin/sh\s+-i|python\s+-c\s+.*socket|perl\s+-e\s+.*socket|php\s+-r\s+.*fsockopen</regex>
+  <description>CRITICAL: Possible Reverse Shell command pattern detected.</description>
+  <group>malware,reverse_shell,critical,</group>
+  <mitre>
+    <id>T1059</id> <!-- Command and Scripting Interpreter -->
+  </mitre>
+</rule>
+
+<rule id="100403" level="12">
+  <if_sid>31100</if_sid>
+  <regex>nikto|sqlmap|nmap|masscan|zgrab|dirbuster|gobuster|wfuzz</regex>
+  <description>HIGH: Known vulnerability scanner or brute-force tool detected.</description>
+  <group>web_attack,reconnaissance,high,</group>
+  <mitre>
+    <id>T1595</id> <!-- Active Scanning -->
+  </mitre>
+</rule>
+
+
+
+
